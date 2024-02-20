@@ -20,7 +20,7 @@ nbc_pilotsurvey <- read_csv("nbc_pilotsurvey.csv")
 ebay <- read_csv("ebay.csv")
 ```
 
-[GitHub Repo Link](https://github.com/aaroncoronado/SDS315_HW2.git)
+[GitHub Repo Link](https://github.com/aaroncoronado/SDS315_HW4.git)
 
 ## **Problem 1**
 
