@@ -1,0 +1,139 @@
+---
+title: "SDS315_HW4"
+author: "Aaron Coronado"
+date: "2024-02-18"
+output: 
+  html_document:
+    toc: yes
+    toc_float: yes
+    df_print: paged
+---
+
+# **Homework 4**
+
+```{r Setup, warning = FALSE, message = FALSE, echo = FALSE}
+library(tidyverse)
+library(mosaic)
+GasPrices <- read_csv("GasPrices.csv")
+sclass <- read_csv("sclass.csv")
+nbc_pilotsurvey <- read_csv("nbc_pilotsurvey.csv")
+ebay <- read_csv("ebay.csv")
+```
+
+[GitHub Repo Link](https://github.com/aaroncoronado/SDS315_HW2.git)
+
+## **Problem 1**
+
+### **Theory A**
+
+```{r T.A, warning = FALSE, message = FALSE, echo = FALSE, include = FALSE}
+dm_dirComp_bs <- do(1000) * diffmean(Price ~ Competitors, data = resample(GasPrices))
+confint(dm_dirComp_bs, level = 0.95)
+```
+
+Theory A states that gas stations charge more if they lack direct competition in sight. After running a bootstrap on the data, I can say that I am 95% confident that the difference in mean price between gas stations with and without direct competition in sight is between -0.06 and 0.01. Given this information, it can be concluded that theory A is unsupported as the difference in means is neither statistically significant nor practically significant as the difference in mean is no more than a few cents per gallon.
+
+### **Theory B**
+
+```{r T.B, warning = FALSE, message = FALSE, echo = FALSE, include = FALSE}
+bs_lm_rich = do(1000) * lm(Price ~ Income, data = resample(GasPrices))
+confint(bs_lm_rich, level = 0.95)
+```
+
+Theory B states that in richer areas the gas prices are higher. After running a bootstrap on a linear model, I can say that I am 95% confident that increase in gas prices is between 6.55e-07 and 1.78e-06 dollars for every \$1 increase in income. In other words, the increase in gas prices is between 0.016 and 0.045 dollars for every 25 thousand dollar increase in income. Given this information, theory B is unsupported. Even though the confidence interval is statistically significant, it is not practically significant as the increase in gas prices for every 25 thousand dollar increase in income is only a few cents.
+
+### **Theory C**
+
+```{r T.C, warning = FALSE, message = FALSE, echo = FALSE, include = FALSE}
+dm_stoplight_bs <- do(1000) * diffmean(Price ~ Stoplight, data = resample(GasPrices))
+confint(dm_stoplight_bs, level = 0.95)
+```
+
+Theory C states that gas stations at stoplights charge more. After running a bootstrap on the data, I can say that I am 95% confident that the difference in mean price between gas stations at a stoplight and not at a stoplight is between -0.04 and 0.03. Theory C is unsupported as the difference in mean price is neither statistically significant nor practically significant as the difference is only a few cents per gallon.
+
+### **Theory D**
+
+```{r T.D, warning = FALSE, message = FALSE, echo = FALSE, include = FALSE}
+dm_highway_bs <- do(1000) * diffmean(Price ~ Highway, data = resample(GasPrices))
+confint(dm_highway_bs, level = 0.95)
+```
+
+Theory D states that gas stations with direct highway access charge more. After running a bootstrap on the data, I can say that I am 95% confident that the difference in mean price between gas stations with and without direct highway access is between 0.01 and 0.08. While the difference in mean price is statistically significant as zero lies outside the confidence interval, it is not practically significant as the difference is only a few cents per gallon. Therefore, theory D is unsupported.
+
+### **Theory E**
+
+```{r T.E, warning = FALSE, message = FALSE, echo = FALSE, include = FALSE}
+dm_shell_bs <- do(1000) * diffmean(Price ~ Highway, data = resample(GasPrices))
+confint(dm_shell_bs, level = 0.95)
+```
+
+Theory E states that the Shell gas stations charge more than non-Shell gas stations. After running a bootstrap on the data, I can say that I am 95% confident that the difference in mean price between Shell and non-Shell gas stations is between 0.01 and 0.08. While the difference in mean price is statistically significant as zero lies outside the confidence interval, it is not practically significant as the difference is only a few cents per gallon. Therefore, theory E is unsupported.
+
+## **Problem 2**
+
+### **Part A**
+
+```{r 2.A, message = FALSE, warning = FALSE, echo = FALSE, include = FALSE}
+eleven_63amg <- sclass %>%
+  filter(year == 2011 & trim == "63 AMG")
+eleven_63amg_bs <- do(1000) * mean(~mileage, data = resample(eleven_63amg))
+confint(eleven_63amg_bs, level = 0.95)
+```
+
+I am 95% confident that the average mileage of 2011 S-Class 63 AMGs that were hitting the used-car market when this data was collected was between 26,285.18 and 31,703.69 miles.
+
+### **Part B**
+
+```{r 2.B, message = FALSE, warning = FALSE, echo = FALSE, include = FALSE}
+fourteen_550 <- sclass %>%
+  filter(year == 2014 & trim == "550") %>%
+  mutate(isBlack = (color == "Black"))
+prop_fourteen_550_bs = do(1000)*prop(~isBlack, data = resample(fourteen_550))
+confint(prop_fourteen_550_bs, level = 0.95)
+```
+
+I am 95% confident that the proportion of all 2014 S-Class 550s that were painted black is between 0.42 and 0.45.
+
+## **Problem 3**
+
+### **Part A**
+
+```{r 3.A, message = FALSE, warning = FALSE, echo = FALSE, include = FALSE}
+happy <- nbc_pilotsurvey %>%
+  filter(Show == "Living with Ed" | Show == "My Name is Earl")
+diffmean_happy_bs = do(1000)*diffmean(Q1_Happy ~ Show, data = resample(happy))
+confint(diffmean_happy_bs, level = 0.95)
+```
+
+I used the *resample()*, *diffmean()*, and *confint()* functions to run a bootstrap on the filtered data which returned a table from which I could determine a 95% confidence interval. With that information, I can say that I am 95% confident that the difference in mean viewer happiness rating of the shows "My Name is Earl" and "Living with Ed" is -0.39 and 0.07. Given that zero lies within the confidence interval the mean difference is neither statistically nor practically significant.
+
+### **Part B**
+
+```{r 3.B, message = FALSE, warning = FALSE, echo = FALSE, include = FALSE}
+annoyed <- nbc_pilotsurvey %>%
+  filter(Show == "The Biggest Loser" | Show == "The Apprentice: Los Angeles")
+dm_annoyed_bs = do(1000)*diffmean(Q1_Annoyed ~ Show, data = resample(annoyed))
+confint(dm_annoyed_bs, level = 0.95)
+```
+
+I used the *resample()*, *diffmean()*, and *confint()* functions to run a bootstrap on the filtered data which returned a table from which I could determine a 95% confidence interval. With that information, I can say that I am 95% confident that the difference in mean viewer annoyance rating of the shows "The Apprentice: Los Angeles" and "The Biggest Loser" is between -0.504 and -0.028. Given that zero lies within the interval, the difference in mean is statistically significant but not practically significant as the difference in mean isn't even an integer.
+
+### **Part C**
+
+```{r 3.C, message = FALSE, warning = FALSE, echo = FALSE, include = FALSE}
+confusing <- nbc_pilotsurvey %>%
+  filter(Show == "Dancing with the Stars")
+bs_prop_conf = do(1000) * prop(~Q2_Confusing >= 4, data = resample(confusing))
+confint(bs_prop_conf)
+```
+
+I used the *resample()*, *prop()*, and *confint()* functions to run a bootstrap on the filtered data which returned a table from which I could determine a 95% confidence interval. With that information, I can say that I am 95% confident that the proportion of viewers that rated the confusingness of "Dancing with the Stars" a 4 or a 5 is between 0.05 and 0.12. While the proportion is statistically significant, it is not practically significant as the 5% to 12% of the viewers is such a small minority.
+
+## **Problem 4**
+
+```{r 4, message = FALSE, warning = FALSE, echo = FALSE, include = FALSE}
+dm_ebay_bs = do(10000)*diffmean(rev_ratio ~ adwords_pause, data = resample(ebay))
+confint(dm_ebay_bs, level = 0.95)
+```
+
+I used the *resample()*, *diffmean()*, and *confint()* functions to run a bootstrap on the data which returned a table from which I could determine a 95% confidence interval. With that information, I can say that I am 95% confident that the difference in mean revenue ratio between the treatment and control DMA is between -0.09 and -0.01. Given that zero lies outside the confidence interval, the differnce in mean revenue ration is statistically significant. As Ebay's revenue can be anywhere between hundreds of thousands or millions of dollars, a 1% to 9% decrease in revenue is practically significant, and the company should continue advertising via Google AdWords.
